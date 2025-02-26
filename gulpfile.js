@@ -1,17 +1,17 @@
-const { series, parallel, task, src, dest, watch, gulp } = require('gulp');
-const jade_ = require('gulp-jade'),
-		pug_ = require('gulp-pug'),
-		sass_ = require('gulp-sass'),
-		concat_ = require('gulp-concat'),
-		plumber_ = require('gulp-plumber'),
-		rename_ = require("gulp-rename"),
-		browserSync_ = require('browser-sync').create(),
-		autoprefixer_ = require('gulp-autoprefixer'),
-		mini_ = require('gulp-clean-css'),
-		uglify_ = require('gulp-uglify'),
-		del_ = require('del'),
-		fs_ = require("fs"),
-		path_ = require("path");
+import { series, parallel, src, dest, watch } from 'gulp';
+import plumber from 'gulp-plumber';
+import pug from 'gulp-pug';
+import autoprefixer from 'gulp-autoprefixer';
+import * as dartSass from 'sass';
+import gulpSass from 'gulp-sass';
+const sass = gulpSass(dartSass);
+import rename from 'gulp-rename';
+import mini from 'gulp-clean-css';
+import uglify from 'gulp-uglify';
+import concat from 'gulp-concat';
+import fs from 'fs';
+import {deleteAsync as del} from 'del';
+import browserSync from 'browser-sync';
 
 const devel = 'source/devel/',
 		build = 'source/build/';
@@ -81,8 +81,8 @@ function includeJS(file) {
 	const slash_path = file.path.replace(/\\/g, '/');
 	const file_path = slash_path.slice(slash_path.indexOf(devel), slash_path.length);
 
-	const str_from = '//#include("';
-	const str_to = '");';
+	// const str_from = '//#include("';
+	// const str_to = '");';
 
 	file.contents = Buffer.from(result_string(absolute_file(file_path)));
 }
@@ -122,19 +122,19 @@ function find_path(string) {
 function absolute_file(some_path) {
 	const str_from = '//#include("';
 	const parent_folder = some_path.replace(some_path.slice(some_path.lastIndexOf('/') + 1, some_path.length), '').replace(devel, '');
-	let file_content = fs_.readFileSync(some_path, 'utf8');
+	let file_content = fs.readFileSync(some_path, 'utf8');
 	file_content = file_content.replace(/\/\/#include\("/g, str_from + devel + parent_folder);
 	return file_content;
 }
 
 
 ///////////////////////////////////////////////////////////////////////////////////////
-//                                                              JADE
+//                                                              PUG
 ///////////////////////////////////////////////////////////////////////////////////////
-function pug() {
+function pugToHtml() {
 	return src(paths.pug.src)
-		.pipe(plumber_())
-		.pipe(pug_({pretty: true}))
+		.pipe(plumber())
+		.pipe(pug())
 		.pipe(dest(paths.pug.dest))
 }
 
@@ -143,18 +143,18 @@ function pug() {
 //                                                              SASS
 ///////////////////////////////////////////////////////////////////////////////////////
 //sass - задача для главного файла стилей
-function sass() {
+function sassToCss() {
 	return src(paths.sass.src)
-		.pipe(plumber_())
-		.pipe(sass_().on('error', sass_.logError))
-		.pipe(autoprefixer_(prefix))
+		.pipe(plumber())
+		.pipe(sass({}, true).on('error', sass.logError))
+		.pipe(autoprefixer(prefix))
 		.pipe(dest(paths.sass.dest))
 }
 
 function css_min() {
 	return src(paths.sass.min.src)
-		.pipe(mini_())
-		.pipe(rename_({
+		.pipe(mini())
+		.pipe(rename({
 			suffix: '.min'
 		}))
 		.pipe(dest(paths.sass.min.dest))
@@ -166,16 +166,16 @@ function css_min() {
 ///////////////////////////////////////////////////////////////////////////////////////
 function js() {
 	return src(paths.js.src)
-		.pipe(plumber_())
+		.pipe(plumber())
 		.on('data',function(file){includeJS(file)})
 		.pipe(dest(paths.js.dest))
 }
 
 function js_min() {
 	return src(paths.js.min.src)
-		.pipe(plumber_())
-		.pipe(uglify_())
-		.pipe(rename_({
+		.pipe(plumber())
+		.pipe(uglify())
+		.pipe(rename({
 			suffix: '.min'
 		}))
 		.pipe(dest(paths.js.min.dest))
@@ -184,17 +184,17 @@ function js_min() {
 function js_libs() {
 	const libsSrc = (!paths.js.libs.src || !paths.js.libs.src.length) ? '.' : paths.js.libs.src;
 	let stream = src(libsSrc)
-		.pipe(plumber_());
+		.pipe(plumber());
 
 	if (paths.js.libs.single) {
 		stream = stream
-			.pipe(concat_('libs.js'))
+			.pipe(concat('libs.js'))
 	}
 
 	if (paths.js.libs.min) {
 		stream = stream
-			.pipe(uglify_())
-			.pipe(rename_({
+			.pipe(uglify())
+			.pipe(rename({
 				suffix: '.min'
 			}))
 	}
@@ -244,8 +244,8 @@ function replaceImagePath(file,str,strTo) {
 ///////////////////////////////////////////////////////////////////////////////////////
 //                                                              CLEAN
 ///////////////////////////////////////////////////////////////////////////////////////
-async function clean() {
-	await del_(build);
+async function cleanBuild() {
+	await del(build);
 }
 
 
@@ -253,7 +253,7 @@ async function clean() {
 //                                                              SERVER
 ///////////////////////////////////////////////////////////////////////////////////////
 function server() {
-	browserSync_.init({
+	browserSync.init({
 		port: 9000,
 		server: {
 			baseDir: './'
@@ -267,13 +267,13 @@ function server() {
 //                                                              WATCHING
 ///////////////////////////////////////////////////////////////////////////////////////
 function watching() {
-	watch(paths.watch.pug, _pug);
-	watch(paths.watch.sass, _sass);
-	watch(paths.watch.js, _js);
+	watch(paths.watch.pug, pugToHtml);
+	watch(paths.watch.sass, sassToCss);
+	watch(paths.watch.js, js);
 	watch(paths.watch.font, copy_font);
 	watch(paths.watch.img, copy_img);
 	watch(paths.watch.other, copy_other);
-	watch(paths.watch.build).on('change', browserSync_.reload);
+	watch(paths.watch.build).on('change', browserSync.reload);
 }
 
 
@@ -281,12 +281,13 @@ function watching() {
 //                                                              RUN
 ///////////////////////////////////////////////////////////////////////////////////////
 
-const _pug = exports.pug = pug;
-const _sass = exports.sass = series(sass, css_min);
-const _js = exports.js = series(js, js_min, js_libs);
-const _copy = exports.copy = parallel(copy_font, copy_img, copy_other);
-const _clean = exports.clean = clean;
+export const _pug = pugToHtml;
+export const _sass = series(sassToCss, css_min);
+export const _js = series(js, js_min, js_libs);
+export const _copy = parallel(copy_font, copy_img, copy_other);
+export const _clean = cleanBuild;
 
-const dev = series(_pug, _sass, _js, _copy);
+export const dev = series(_pug, _sass, _js, _copy);
+export const bobydilder = series(_clean, dev);
 
-exports.default = series(dev, parallel(watching, server));
+export default series(dev, parallel(watching, server));

@@ -1,7 +1,6 @@
 # Archetype BEM
 
 1. `npm i`
-1. `bower i`
 1. `gulp`
 
 ----
