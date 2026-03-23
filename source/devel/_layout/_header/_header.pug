@@ -1,2 +1,17 @@
 mixin header()
     header.header&attributes(attributes)
+        .header__top
+            .header__.header__toggle
+                +toggleBurgerMobile
+            .header__.header__logo
+                +logo
+            .header__.header__search
+                +search
+            .header__.header__info
+                +headerContact
+        .header__nav.headerNav
+            .headerNav__.headerNav__toggle
+                +toggleBurgerDesktop
+            .headerNav__.headerNav__menu
+                +menu
+            .headerNav__.headerNav__actions

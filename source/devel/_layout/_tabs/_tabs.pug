@@ -1,0 +1,10 @@
+mixin tab_menu
+    .tabs
+        .tabs__header
+            .tab__label.active Категории
+            .tab__label Меню
+        .tabs__body
+            .tab__content.active
+                +sidebar-category-mobile
+            .tab__content
+                +main__menu_mobile

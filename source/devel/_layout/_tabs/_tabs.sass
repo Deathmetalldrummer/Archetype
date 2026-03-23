@@ -1,0 +1,55 @@
+.tabs
+  display: flex
+  flex-direction: column
+  height: 100%
+  +mr_(1025px)
+    display: none
+.tabs__header
+  display: flex
+  align-items: stretch
+  border-bottom: 1px solid rgba(0,0,0,0.105)
+  flex-shrink: 0
+.tabs__body
+  flex-grow: 1
+  overflow: hidden
+  //padding: 20px
+.tab__label
+  padding: 10px
+  text-align: center
+  flex-grow: 1
+  flex-shrink: 0
+  position: relative
+  cursor: pointer
+  &.active
+    background-color: rgba(0, 0, 0, 0.1)
+  &:after
+    content: ''
+    position: absolute
+    //left: 0
+    bottom: -1px
+    width: 0
+    height: 2px
+    background-color: rgb(225,74,92)
+    transition: width 0.4s cubic-bezier(0.19, 1, 0.22, 1)
+  &:first-of-type:after
+    right: 0
+  &:last-of-type:after
+    left: 0
+  &.active:after,
+  &:hover:after
+    width: 100%
+
+.tab__content
+  display: none
+  height: 100%
+  overflow: hidden
+  position: relative
+  animation: wd-fadeIn 1s ease
+  &.active
+    display: block
+
+@keyframes wd-fadeIn
+  from
+    opacity: 0
+  to
+    opacity: 1

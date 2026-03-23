@@ -1,0 +1,40 @@
+.toggleDesktop
+  +_mr(1024px)
+    display: none
+  border-radius: 100px
+  background-color: #fff
+  border: 1px solid rgba(0, 0, 0, 0.1)
+  cursor: pointer
+  display: flex
+  align-items: center
+  flex-flow: row nowrap
+  padding: 3px
+.toggleDesktop__icon
+  border-radius: 100px
+  padding: 8px
+  background-color: rgb(219, 0, 12)
+  display: flex
+  align-items: center
+  justify-content: center
+  flex-shrink: 0
+  svg
+    width: 20px
+    height: 20px
+    fill: #fff
+.toggleDesktop__text
+  flex-grow: 1
+  margin: 0 10px
+.toggleMobile
+  +mr_(1025px)
+    display: none
+  padding: 5px
+  border-radius: 50%
+  background-color: transparent
+  border: none
+  cursor: pointer
+  display: inline-flex
+  align-items: center
+  justify-content: center
+.toggleMobile__icon
+  width: 20px
+  height: 20px
